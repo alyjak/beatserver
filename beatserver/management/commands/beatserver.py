@@ -20,6 +20,10 @@ class Command(BaseCommand):
             "--layer", action="store", dest="layer", default=DEFAULT_CHANNEL_LAYER,
             help="Channel layer alias to use, if not the default.",
         )
+        parser.add_argument(
+            "--emitonly", dest="emitonly", action="store_false",
+            help="Don't initialize channel consumers on the listed channels, only emit messages. Default false.",
+        )
 
     def handle(self, *args, **options):
         # Get the channel layer they asked for (or see if one isn't configured)
@@ -44,7 +48,8 @@ class Command(BaseCommand):
         server = self.server_class(
             application=get_default_application(),
             channel_layer=self.channel_layer,
-            beat_config=beat_config
+            beat_config=beat_config,
+            emit_only=options['emitonly']
         )
 
         server.run()

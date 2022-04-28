@@ -8,12 +8,13 @@ from croniter import croniter
 
 class BeatServer(StatelessServer):
 
-    def __init__(self, application, channel_layer, beat_config, max_applications=1000):
+    def __init__(self, application, channel_layer, beat_config, emit_only=False, max_applications=1000):
         super().__init__(application, max_applications)
         self.channel_layer = channel_layer
         if self.channel_layer is None:
             raise ValueError("Channel layer is not valid")
         self.beat_config = beat_config
+        self.emit_only = emit_only
 
     async def handle(self):
         """
@@ -41,7 +42,8 @@ class BeatServer(StatelessServer):
 
         # Wait for them all to exit
         await asyncio.wait(emitters)
-        await asyncio.wait(listeners)
+        if not self.emit_only:
+            await asyncio.wait(listeners)
 
     async def emitters(self, key, value):
         """
